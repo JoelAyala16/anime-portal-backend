@@ -1,41 +1,82 @@
-const express = require("express");
-const Anime = require("../models/Anime");
+import express from "express";
+import multer from "multer";
+import Anime from "../models/Anime.js";
 
 const router = express.Router();
 
-// Obtener todos
+// 📂 Configuración de multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+});
+const upload = multer({ storage });
+
+// 📌 Crear anime
+router.post("/", upload.single("imagen"), async (req, res) => {
+  try {
+    const { titulo, descripcion, genero } = req.body;
+    const nuevoAnime = new Anime({
+      titulo,
+      descripcion,
+      genero,
+      imagen: req.file ? `/uploads/${req.file.filename}` : null,
+    });
+    await nuevoAnime.save();
+    res.json(nuevoAnime);
+  } catch (err) {
+    console.error("❌ Error guardando anime:", err);
+    res.status(500).json({ error: "Error al guardar anime" });
+  }
+});
+
+// 📌 Obtener todos
 router.get("/", async (req, res) => {
-  const animes = await Anime.find();
-  res.json(animes);
+  try {
+    const animes = await Anime.find();
+    res.json(animes);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener animes" });
+  }
 });
 
-// Obtener por ID
+// 📌 Obtener uno por ID
 router.get("/:id", async (req, res) => {
-  const anime = await Anime.findById(req.params.id);
-  if (!anime) return res.status(404).json({ error: "Anime no encontrado" });
-  res.json(anime);
+  try {
+    const anime = await Anime.findById(req.params.id);
+    res.json(anime);
+  } catch (err) {
+    res.status(404).json({ error: "Anime no encontrado" });
+  }
 });
 
-// Crear
-router.post("/", async (req, res) => {
-  const nuevo = new Anime(req.body);
-  await nuevo.save();
-  res.json(nuevo);
+// 📌 Editar
+router.put("/:id", upload.single("imagen"), async (req, res) => {
+  try {
+    const { titulo, descripcion, genero } = req.body;
+    const updated = await Anime.findByIdAndUpdate(
+      req.params.id,
+      {
+        titulo,
+        descripcion,
+        genero,
+        imagen: req.file ? `/uploads/${req.file.filename}` : undefined,
+      },
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: "Error al actualizar anime" });
+  }
 });
 
-// Actualizar
-router.put("/:id", async (req, res) => {
-  const actualizado = await Anime.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(actualizado);
-});
-
-// Eliminar
+// 📌 Eliminar
 router.delete("/:id", async (req, res) => {
-  await Anime.findByIdAndDelete(req.params.id);
-  res.json({ msg: "Anime eliminado" });
+  try {
+    await Anime.findByIdAndDelete(req.params.id);
+    res.json({ message: "Anime eliminado" });
+  } catch (err) {
+    res.status(500).json({ error: "Error al eliminar anime" });
+  }
 });
 
-module.exports = router;
-
-
-
+export default router;
