@@ -7,7 +7,8 @@ const AnimeSchema = new mongoose.Schema({
   rating: { type: Number },
   personajes: [{ type: String }],
   imagenes: [{ type: String }],
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("Anime", AnimeSchema);
+
 

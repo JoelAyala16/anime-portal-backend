@@ -1,48 +1,38 @@
 const express = require("express");
 const Personaje = require("../models/Personaje");
+
 const router = express.Router();
 
-// Obtener todos los personajes
+// Obtener todos
 router.get("/", async (req, res) => {
-  try {
-    const personajes = await Personaje.find();
-    res.json(personajes);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  const personajes = await Personaje.find();
+  res.json(personajes);
 });
 
-// Crear un personaje
+// Obtener por ID
+router.get("/:id", async (req, res) => {
+  const personaje = await Personaje.findById(req.params.id);
+  if (!personaje) return res.status(404).json({ error: "Personaje no encontrado" });
+  res.json(personaje);
+});
+
+// Crear
 router.post("/", async (req, res) => {
-  try {
-    const personaje = new Personaje(req.body);
-    await personaje.save();
-    res.status(201).json(personaje);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+  const nuevo = new Personaje(req.body);
+  await nuevo.save();
+  res.json(nuevo);
 });
 
-// Actualizar un personaje
+// Actualizar
 router.put("/:id", async (req, res) => {
-  try {
-    const personaje = await Personaje.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.json(personaje);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+  const actualizado = await Personaje.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(actualizado);
 });
 
-// Eliminar un personaje
+// Eliminar
 router.delete("/:id", async (req, res) => {
-  try {
-    await Personaje.findByIdAndDelete(req.params.id);
-    res.json({ message: "Personaje eliminado" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  await Personaje.findByIdAndDelete(req.params.id);
+  res.json({ msg: "Personaje eliminado" });
 });
 
 module.exports = router;

@@ -1,48 +1,38 @@
 const express = require("express");
 const Anime = require("../models/Anime");
+
 const router = express.Router();
 
-// Obtener todos los animes
+// Obtener todos
 router.get("/", async (req, res) => {
-  try {
-    const animes = await Anime.find();
-    res.json(animes);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  const animes = await Anime.find();
+  res.json(animes);
 });
 
-// Crear un anime
+// Obtener por ID
+router.get("/:id", async (req, res) => {
+  const anime = await Anime.findById(req.params.id);
+  if (!anime) return res.status(404).json({ error: "Anime no encontrado" });
+  res.json(anime);
+});
+
+// Crear
 router.post("/", async (req, res) => {
-  try {
-    const anime = new Anime(req.body);
-    await anime.save();
-    res.status(201).json(anime);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+  const nuevo = new Anime(req.body);
+  await nuevo.save();
+  res.json(nuevo);
 });
 
-// Actualizar un anime
+// Actualizar
 router.put("/:id", async (req, res) => {
-  try {
-    const anime = await Anime.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.json(anime);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+  const actualizado = await Anime.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(actualizado);
 });
 
-// Eliminar un anime
+// Eliminar
 router.delete("/:id", async (req, res) => {
-  try {
-    await Anime.findByIdAndDelete(req.params.id);
-    res.json({ message: "Anime eliminado" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  await Anime.findByIdAndDelete(req.params.id);
+  res.json({ msg: "Anime eliminado" });
 });
 
 module.exports = router;
