@@ -1,38 +1,47 @@
-const express = require("express");
-const path = require("path");
-const mongoose = require("mongoose");
-const cors = require("cors");
-require("dotenv").config();
+// server.js
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 
-const seedDatabase = require("./seed"); // importar seed.js
+// Rutas
+import animesRouter from "./routes/animes.js";
+import personajesRouter from "./routes/personajes.js";
+
+dotenv.config();
 
 const app = express();
 
+// Para __dirname en ESModules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: "*", // 🔧 en producción puedes poner la URL del frontend
+  methods: ["GET", "POST", "PUT", "DELETE"],
+}));
 app.use(express.json());
 
-// Servir imágenes desde /uploads
+// Servir imágenes
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Rutas API
-app.use("/api/animes", require("./routes/animes"));
-app.use("/api/personajes", require("./routes/personajes"));
+app.use("/api/animes", animesRouter);
+app.use("/api/personajes", personajesRouter);
 
-// Conectar a MongoDB
-mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(async () => {
+// Conexión MongoDB
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
+
+mongoose.connect(MONGO_URI, { })
+  .then(() => {
     console.log("✅ Conectado a MongoDB");
-
-    // Insertar datos de prueba si no existen
-    await seedDatabase();
-
-    // Iniciar servidor
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
+    app.listen(PORT, () =>
+      console.log(`🚀 Servidor corriendo en puerto ${PORT}`)
+    );
   })
-  .catch((err) => {
-    console.error("❌ Error al conectar a MongoDB:", err);
-    process.exit(1);
-  });
+  .catch((err) => console.error("❌ Error de conexión:", err));
+
