@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const PersonajeSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
@@ -7,4 +7,4 @@ const PersonajeSchema = new mongoose.Schema({
   animeId: { type: mongoose.Schema.Types.ObjectId, ref: "Anime", required: true },
 }, { timestamps: true });
 
-export default mongoose.model("Personaje", PersonajeSchema);
+module.exports = mongoose.model("Personaje", PersonajeSchema);
