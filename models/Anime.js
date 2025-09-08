@@ -1,15 +1,13 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
-const animeSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  genre: { type: String, default: "" },
-  rating: { type: Number, default: 0, min: 0, max: 10 },
-  year: { type: Number, default: null },
-  studio: { type: String, default: "" },
-  seasons: { type: Number, default: 1 },
-  description: { type: String, default: "" },
-  characters: { type: [String], default: [] },
-  images: { type: [String], default: [] }
-}, { timestamps: true });
+const AnimeSchema = new mongoose.Schema({
+  titulo: { type: String, required: true },
+  descripcion: { type: String },
+  genero: { type: String },
+  rating: { type: Number },
+  personajes: [{ type: String }],
+  imagenes: [{ type: String }],
+});
 
-export default mongoose.model("Anime", animeSchema);
+module.exports = mongoose.model("Anime", AnimeSchema);
+
