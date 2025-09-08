@@ -22,7 +22,7 @@ router.post("/", upload.single("imagen"), async (req, res) => {
       imagen: req.file ? `/uploads/${req.file.filename}` : null,
     });
     await nuevoPersonaje.save();
-    res.json(nuevoPersonaje);
+    res.status(201).json(nuevoPersonaje);
   } catch (err) {
     console.error("❌ Error guardando personaje:", err);
     res.status(500).json({ error: "Error al guardar personaje" });
@@ -32,9 +32,10 @@ router.post("/", upload.single("imagen"), async (req, res) => {
 // 📌 Obtener todos
 router.get("/", async (req, res) => {
   try {
-    const personajes = await Personaje.find();
+    const personajes = await Personaje.find().populate("anime"); 
     res.json(personajes);
   } catch (err) {
+    console.error("❌ Error obteniendo personajes:", err);
     res.status(500).json({ error: "Error al obtener personajes" });
   }
 });
@@ -42,10 +43,12 @@ router.get("/", async (req, res) => {
 // 📌 Obtener uno por ID
 router.get("/:id", async (req, res) => {
   try {
-    const personaje = await Personaje.findById(req.params.id);
+    const personaje = await Personaje.findById(req.params.id).populate("anime");
+    if (!personaje) return res.status(404).json({ error: "Personaje no encontrado" });
     res.json(personaje);
   } catch (err) {
-    res.status(404).json({ error: "Personaje no encontrado" });
+    console.error("❌ Error obteniendo personaje:", err);
+    res.status(500).json({ error: "Error al obtener personaje" });
   }
 });
 
@@ -63,8 +66,10 @@ router.put("/:id", upload.single("imagen"), async (req, res) => {
       },
       { new: true }
     );
+    if (!updated) return res.status(404).json({ error: "Personaje no encontrado" });
     res.json(updated);
   } catch (err) {
+    console.error("❌ Error actualizando personaje:", err);
     res.status(500).json({ error: "Error al actualizar personaje" });
   }
 });
@@ -72,11 +77,14 @@ router.put("/:id", upload.single("imagen"), async (req, res) => {
 // 📌 Eliminar
 router.delete("/:id", async (req, res) => {
   try {
-    await Personaje.findByIdAndDelete(req.params.id);
-    res.json({ message: "Personaje eliminado" });
+    const deleted = await Personaje.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ error: "Personaje no encontrado" });
+    res.json({ message: "✅ Personaje eliminado" });
   } catch (err) {
+    console.error("❌ Error eliminando personaje:", err);
     res.status(500).json({ error: "Error al eliminar personaje" });
   }
 });
 
 export default router;
+
